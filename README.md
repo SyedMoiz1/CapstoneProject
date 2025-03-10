@@ -1,4 +1,4 @@
-AI-Powered Adaptive Chessboard
+# AI-Powered Adaptive Chessboard
 
 Overview
 
@@ -29,7 +29,7 @@ A CUDA-compatible GPU (optional, for faster inference)
 Installation
 
 # Clone the repository
-git clone https://github.com/yourusername/capstone-chessboard.git
+git clone https://github.com/syedmoiz1/capstone-chessboard.git
 cd capstone-chessboard
 
 
@@ -38,5 +38,5 @@ Running the Project
 
 Contributors
 Syed Moiz, Liam Ault, Peter Mcewen, Mohammed Aziz
-License
+
 
