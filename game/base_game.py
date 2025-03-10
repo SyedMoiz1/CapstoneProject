@@ -1,5 +1,6 @@
 import chess
 import subprocess
+from config import LC0_PATH
 
 class BaseGame:
     def __init__(self):
@@ -93,7 +94,7 @@ class BaseGame:
             except ValueError:
                 print("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
     def start_engine(self, weights_file):
-        lc0_path = "../MaiaNet/lc0/build/release/lc0"
+        lc0_path = LC0_PATH + "lc0"
         command = [lc0_path, f"--weights={weights_file}"]
         #print("Starting engine with command:", " ".join(command))  # Debug print
         process = subprocess.Popen(

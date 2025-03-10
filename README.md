@@ -23,7 +23,7 @@ Follow the build instructions here:
 (Linux): https://github.com/LeelaChessZero/lc0 (README)
 
 After build is complete, copy the weights files from ./weights into MaiaNet/lc0/build/release/ or MaiaNet/lc0/build/ (depending on where lc0.exe is located)
-
+Edit game/config.py to make sure it contains the right path for the lc0 executable
 
 Running the Project
 

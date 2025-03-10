@@ -1,6 +1,7 @@
 import subprocess
 import chess
 from base_game import BaseGame
+from config import LC0_PATH
 
 class StandardGame(BaseGame):
     def __init__(self):
@@ -21,11 +22,11 @@ class StandardGame(BaseGame):
 
         print("Difficulty level selected: " + self.difficulty)
         if self.difficulty == "easy": 
-            self.weights_file = "../MaiaNet/lc0/build/release/900.pb.gz"
+            self.weights_file = LC0_PATH + "900.pb.gz"
         elif self.difficulty == "medium":
-            self.weights_file = "../MaiaNet/lc0/build/release/1400.pb.gz"
+            self.weights_file = LC0_PATH + "1400.pb.gz"
         else:
-            self.weights_file = "../MaiaNet/lc0/build/release/1800.pb.gz"    
+            self.weights_file = LC0_PATH + "1800.pb.gz"    
 
 #########STARTING ENGINE
         engine = self.start_engine(self.weights_file)

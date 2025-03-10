@@ -1,0 +1,1 @@
+LC0_PATH = "../MaiaNet/lc0/build/release/"
