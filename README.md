@@ -16,21 +16,13 @@ Game Metrics Tracking: Tracks win/loss ratio, blunder rate, and game duration.
 
 Installation & Setup
 
-Requirements
+clone lc0 repository in MaiaNet/lc0 from: https://github.com/LeelaChessZero/lc0.git
 
-Python 3.8+
+Follow the build instructions here: 
+(Windows): https://github.com/LeelaChessZero/lc0/blob/master/windows_build.md 
+(Linux): https://github.com/LeelaChessZero/lc0 (README)
 
-python-chess
-
-subprocess (for handling Lc0 commands)
-
-A CUDA-compatible GPU (optional, for faster inference)
-
-Installation
-
-# Clone the repository
-git clone https://github.com/syedmoiz1/capstone-chessboard.git
-cd capstone-chessboard
+After build is complete, copy the weights files from ./weights into MaiaNet/lc0/build/release/
 
 
 Running the Project
