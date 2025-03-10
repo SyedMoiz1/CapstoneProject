@@ -1,0 +1,75 @@
+{
+    "users": [
+        {
+            "name": "beast",
+            "diff_level": 1800,
+            "games_played": 5,
+            "wins": 0,
+            "losses": 5,
+            "blunders": [
+                3,
+                3,
+                3,
+                3,
+                3
+            ],
+            "blunder_avg": 0,
+            "avg_duration": 0,
+            "elo_history": [
+                1900,
+                1800
+            ],
+            "game_history": [
+                {
+                    "game_id": 1,
+                    "game_elo": 1900,
+                    "moves": 8,
+                    "result": "loss",
+                    "blunders": 3
+                },
+                {
+                    "game_id": 2,
+                    "game_elo": 1900,
+                    "moves": 8,
+                    "result": "loss",
+                    "blunders": 3
+                },
+                {
+                    "game_id": 3,
+                    "game_elo": 1900,
+                    "moves": 8,
+                    "result": "loss",
+                    "blunders": 3
+                },
+                {
+                    "game_id": 4,
+                    "game_elo": 1900,
+                    "moves": 8,
+                    "result": "loss",
+                    "blunders": 3
+                },
+                {
+                    "game_id": 5,
+                    "game_elo": 1900,
+                    "moves": 8,
+                    "result": "loss",
+                    "blunders": 3
+                }
+            ]
+        },
+        {
+            "name": "syed",
+            "diff_level": 900,
+            "games_played": 0,
+            "wins": 0,
+            "losses": 0,
+            "blunders": [],
+            "blunder_avg": 0,
+            "avg_duration": 0,
+            "elo_history": [
+                900
+            ],
+            "game_history": []
+        }
+    ]
+}

@@ -1,0 +1,158 @@
+import chess
+import subprocess
+
+class BaseGame:
+    def __init__(self):
+        self.board = chess.Board()
+        self.moves = ""
+        self.weights_file = None
+
+    def game_over(self):
+        #Checks if game is over
+        if self.board.is_game_over():
+            print("Game over!")
+            # Check the reason
+            if self.board.is_checkmate():
+                print("The game ended in checkmate.")
+                #CHECK WINNER
+                if self.board.turn == chess.BLACK:
+                    winner = "White"
+                else:
+                    winner = "Black"
+                print(f"The winner is {winner}.")
+            elif self.board.is_stalemate():
+                print("The game ended in a stalemate.")
+            elif self.board.is_insufficient_material():
+                print("The game ended due to insufficient material.")
+            elif self.board.can_claim_fifty_moves():
+                print("The game ended due to the fifty-move rule.")
+            elif self.board.can_claim_threefold_repetition():
+                print("The game ended due to threefold repetition.")
+            return True
+        
+    def first_move(self, engine, turn):
+       #performs the first move of the game
+
+        if turn == "user":
+            user_move = self.take_user_move(self.board)
+            uci_command = "position startpos moves " + user_move.uci()
+            self.send_command(engine, uci_command)
+            self.moves += uci_command + " "
+
+            #update board state
+            self.board.push(user_move)
+            print(f"First User Move: {user_move.uci()}")
+            self.display_board(self.board)
+
+            #Take AI's move
+            ai_move = self.take_AI_move(engine)
+            print("AI's first move: " + ai_move.uci())
+            self.moves += ai_move.uci() + " "
+            #update board state
+            self.board.push(ai_move)
+            
+        else:
+            ai_move = self.take_AI_move(engine)
+            print("AI's move: " + ai_move.uci()+ "\n")
+            self.moves += "position startpos moves " + ai_move.uci() + " "
+            #update board state
+            self.board.push(ai_move)
+            
+
+    def take_AI_move(self, engine):
+        #takes AI move and validates it
+        print(f"GIVING AI COMMAND: {self.moves}")
+        self.send_command(engine, self.moves)
+        self.send_command(engine, "go nodes 3")
+
+        while True:
+            try:
+                output = self.read_response(engine)
+                if "bestmove" in output:
+                    best_move = output.split("bestmove ")[1].split(" ")[0]
+                    if chess.Move.from_uci(best_move) in self.board.legal_moves:
+                        return chess.Move.from_uci(best_move)
+                    else:
+                        print(f"Invalid move from engine: {best_move}")
+                else:
+                    print("No valid move found in engine output.")
+                self.send_command(engine, "go nodes 3")
+            except (ValueError, IndexError) as e:
+                print(f"Error parsing engine output: {e}")
+                self.send_command(engine, "go nodes 3")
+
+    def take_user_move(self, board):
+        #take users move and validates it, takes board state and checks if move is valid
+        while True:
+            try:
+                move = chess.Move.from_uci(input("Please enter your move: "))
+                if move in board.legal_moves:
+                    return move
+                else:
+                    print("Invalid move. Please enter a valid move.")
+            except ValueError:
+                print("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
+    def start_engine(self, weights_file):
+        lc0_path = "../MaiaNet/lc0/build/release/lc0"
+        command = [lc0_path, f"--weights={weights_file}"]
+        #print("Starting engine with command:", " ".join(command))  # Debug print
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return process
+    
+    def send_command(self, process, command):
+        # Send a command to lc0
+        process.stdin.write(command + "\n")
+        process.stdin.flush() #Forces the command to be sent immediately
+
+    def read_response(self, process):
+        output = []
+        for line in iter(process.stdout.readline, ''):
+            line = line.strip()
+            if line:
+                print(line)  # Debug print
+                output.append(line)
+                if "bestmove" in line:
+                    break
+        return "\n".join(output)
+
+    def display_board(self, board):
+        #Displays the board with ranks and files
+        board_str = ""
+
+        BOLD = "\033[1m"
+        RESET = "\033[0m"
+        files = BOLD + "  a b c d e f g h  " + RESET
+        board_str += files + "\n"
+        for i, row in enumerate(str(board).split("\n")):
+            rank = BOLD + str(8-i) + RESET
+            board_str += f"{rank} {row} {rank}\n"
+        board_str += files + "\n"
+        print(board_str)
+
+
+
+    def board_to_matrix(self, board):
+        #Converts board to matrix
+        board_matrix = []
+        for row in str(board).split("\n"):
+            print(f"ROW: {row}")
+            board_matrix.append(row.split(" ")[0:8])
+        print(board_matrix)
+        return #board_matrix
+
+    def find_winner(self, board):
+        if board.is_checkmate():
+            if board.turn == chess.WHITE:
+                #black wins
+                return False 
+            else:
+                # White wins
+                return True
+        else:
+            return None #represents a draw/no winner
