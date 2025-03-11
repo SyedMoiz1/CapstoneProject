@@ -1,2 +1,4 @@
 .vs/
+myenv/
+__pycache__/
 *.pyc
