@@ -1,3 +1,13 @@
 meson
 python-chess
 flask
+requests
+matplotlib
+websocket
+speechrecognition
+pyaudio
+torch
+openai-whisper
+sounddevice
+numpy
+soundfile

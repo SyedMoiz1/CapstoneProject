@@ -1,12 +1,16 @@
 import chess
 import subprocess
-from config import LC0_PATH
+import re
+from game.config import LC0_PATH
+
+from voice_input import transcribe_audio
 
 class BaseGame:
-    def __init__(self):
+    def __init__(self, board):
         self.board = chess.Board()
         self.moves = ""
         self.weights_file = None
+        self.board = board
 
     def game_over(self):
         #Checks if game is over
@@ -33,15 +37,16 @@ class BaseGame:
         
     def first_move(self, engine, turn):
        #performs the first move of the game
-
+        self.board.home()
         if turn == "user":
             user_move = self.take_user_move(self.board)
             uci_command = "position startpos moves " + user_move.uci()
             self.send_command(engine, uci_command)
             self.moves += uci_command + " "
-
+            self.board.processMove(str(user_move))
             #update board state
             self.board.push(user_move)
+            
             print(f"First User Move: {user_move.uci()}")
             self.display_board(self.board)
 
@@ -49,6 +54,7 @@ class BaseGame:
             ai_move = self.take_AI_move(engine)
             print("AI's first move: " + ai_move.uci())
             self.moves += ai_move.uci() + " "
+            self.board.processMove(str(ai_move))
             #update board state
             self.board.push(ai_move)
             
@@ -57,6 +63,7 @@ class BaseGame:
             print("AI's move: " + ai_move.uci()+ "\n")
             self.moves += "position startpos moves " + ai_move.uci() + " "
             #update board state
+            self.board.processMove(str(ai_move))
             self.board.push(ai_move)
             
 
@@ -72,6 +79,7 @@ class BaseGame:
                 if "bestmove" in output:
                     best_move = output.split("bestmove ")[1].split(" ")[0]
                     if chess.Move.from_uci(best_move) in self.board.legal_moves:
+                        self.board.processMove(str(best_move))
                         return chess.Move.from_uci(best_move)
                     else:
                         print(f"Invalid move from engine: {best_move}")
@@ -86,13 +94,25 @@ class BaseGame:
         #take users move and validates it, takes board state and checks if move is valid
         while True:
             try:
-                move = chess.Move.from_uci(input("Please enter your move: "))
+                #while True:
+                move_input = self.take_move("Please enter your move: ")
+                    
+                verify = self.take_input(f"Move selected: {move_input}, are you sure? (Yes/No)")
+                while verify not in {"yes", "no"}: verify = self.take_input("Invalid input. Please verify Yes or No.")
+
+                if verify == "no":
+                    continue
+
+                move = chess.Move.from_uci(move_input)
+
                 if move in board.legal_moves:
+                    self.board.processMove(str(move))
                     return move
                 else:
                     print("Invalid move. Please enter a valid move.")
             except ValueError:
                 print("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
+
     def start_engine(self, weights_file):
         lc0_path = LC0_PATH + "lc0"
         command = [lc0_path, f"--weights={weights_file}"]
@@ -157,3 +177,35 @@ class BaseGame:
                 return True
         else:
             return None #represents a draw/no winner
+        
+    def take_input(self, prompt):
+        print(prompt)
+        response = transcribe_audio()
+        
+        return response
+    
+    def take_move(self, prompt):
+        while True:
+            move = self.take_input(prompt)
+            move_to_uci = self.convert_to_uci(move)
+
+            if move_to_uci:
+                return move_to_uci
+            else:
+                print(f"Input received: {move}")
+                print("Invalid input format. Please say moves like 'E2 E4'.")
+
+    def convert_to_uci(self, speech_input):
+        # Normalize input: Remove commas, extra spaces, and convert to lowercase
+        cleaned_input = re.sub(r"[,\s]+", " ", speech_input.strip().lower())
+
+        # Match valid chess move formats (like "e2 e4", "e2e4", "e2, e4")
+        pattern = r"([a-h][1-8])\s?([a-h][1-8])"
+
+        match = re.match(pattern, cleaned_input)
+        if not match:
+            return None
+
+        # Extract the move and concatenate to UCI format
+        uci_move = match.group(1) + match.group(2)
+        return uci_move
