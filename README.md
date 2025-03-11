@@ -19,6 +19,7 @@ Installation & Setup
 clone lc0 repository in MaiaNet/lc0 from: https://github.com/LeelaChessZero/lc0.git
 
 Follow the build instructions here: 
+
 (Windows): https://github.com/LeelaChessZero/lc0/blob/master/windows_build.md 
 
 (Linux): https://github.com/LeelaChessZero/lc0 (README)
