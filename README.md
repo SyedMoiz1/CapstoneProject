@@ -20,6 +20,7 @@ clone lc0 repository in MaiaNet/lc0 from: https://github.com/LeelaChessZero/lc0.
 
 Follow the build instructions here: 
 (Windows): https://github.com/LeelaChessZero/lc0/blob/master/windows_build.md 
+
 (Linux): https://github.com/LeelaChessZero/lc0 (README)
 
 After build is complete, copy the weights files from ./weights into MaiaNet/lc0/build/release/ or MaiaNet/lc0/build/ (depending on where lc0.exe is located)
