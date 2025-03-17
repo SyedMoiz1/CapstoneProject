@@ -10,8 +10,8 @@ from game.analyze_game import analyze_pgn
 N = 5 #Adapt every 5 games and Weight the last 5 games more heavily
 
 class AdaptiveGame(BaseGame):
-    def __init__(self, board):
-        super().__init__(board)        
+    def __init__(self, actual_board):
+        super().__init__(actual_board)        
 
 
     def start(self):
@@ -104,7 +104,7 @@ class AdaptiveGame(BaseGame):
                 # Call self.board.home() every 10 moves
                 if move_count % 10 == 0:
                     print("Recalibrating magnet to home position...")
-                    self.board.home()
+                    self.actual_board.home()
 
                 #AI's move
                 if not self.game_over():
@@ -119,7 +119,7 @@ class AdaptiveGame(BaseGame):
                     # Call self.board.home() every 10 moves
                     if move_count % 10 == 0:
                         print("Recalibrating magnet to home position...")
-                        self.board.home()
+                        self.actual_board.home()
 
            
             ####Game over

@@ -4,66 +4,70 @@ import re
 from game.config import LC0_PATH
 
 from voice_input import transcribe_audio
+import time
 
 class BaseGame:
-    def __init__(self, board):
+    def __init__(self, actual_board, user_screen):
         self.board = chess.Board()
         self.moves = ""
         self.weights_file = None
-        self.board = board
+        self.actual_board = actual_board
+        self.user_screen = user_screen
 
     def game_over(self):
         #Checks if game is over
         if self.board.is_game_over():
-            print("Game over!")
             # Check the reason
             if self.board.is_checkmate():
-                print("The game ended in checkmate.")
                 #CHECK WINNER
                 if self.board.turn == chess.BLACK:
                     winner = "White"
                 else:
                     winner = "Black"
-                print(f"The winner is {winner}.")
+                self.user_screen.log_to_gui(f"Game over!\n The game ended in checkmate.\nThe winner is {winner}.")
             elif self.board.is_stalemate():
-                print("The game ended in a stalemate.")
+                self.user_screen.log_to_gui("Game over!\n The game ended in a stalemate.")
             elif self.board.is_insufficient_material():
-                print("The game ended due to insufficient material.")
+                self.user_screen.log_to_gui("Game over!\n The game ended due to insufficient material.")
             elif self.board.can_claim_fifty_moves():
-                print("The game ended due to the fifty-move rule.")
+                self.user_screen.log_to_gui("Game over!\n The game ended due to the fifty-move rule.")
             elif self.board.can_claim_threefold_repetition():
-                print("The game ended due to threefold repetition.")
+                self.user_screen.log_to_gui("Game over!\n The game ended due to threefold repetition.")
             return True
         
     def first_move(self, engine, turn):
        #performs the first move of the game
-        self.board.home()
+        self.actual_board.home()
         if turn == "user":
-            user_move = self.take_user_move(self.board)
+            #user_move = self.take_user_move(self.board)
+            user_move = chess.Move.from_uci("e2e4")
+            self.user_screen.log_to_gui(f"Your opening move: {user_move.uci()}")
             uci_command = "position startpos moves " + user_move.uci()
             self.send_command(engine, uci_command)
             self.moves += uci_command + " "
-            self.board.processMove(str(user_move))
+            self.actual_board.processMove(str(user_move))
             #update board state
             self.board.push(user_move)
             
-            print(f"First User Move: {user_move.uci()}")
             self.display_board(self.board)
 
+            time.sleep(2)
             #Take AI's move
-            ai_move = self.take_AI_move(engine)
-            print("AI's first move: " + ai_move.uci())
+            #ai_move = self.take_AI_move(engine)
+            ai_move = chess.Move.from_uci("e7e5")
+            self.user_screen.log_to_gui("AI's opening move: " + ai_move.uci())
             self.moves += ai_move.uci() + " "
-            self.board.processMove(str(ai_move))
+            self.actual_board.processMove(str(ai_move))
             #update board state
             self.board.push(ai_move)
             
         else:
             ai_move = self.take_AI_move(engine)
-            print("AI's move: " + ai_move.uci()+ "\n")
+            #ai_move = chess.Move.from_uci("e7e5")
+            self.user_screen.log_to_gui("AI's opening move: " + ai_move.uci()+ "\n")
             self.moves += "position startpos moves " + ai_move.uci() + " "
             #update board state
-            self.board.processMove(str(ai_move))
+            self.actual_board.processMove(str(ai_move))
             self.board.push(ai_move)
             
 
@@ -79,7 +83,7 @@ class BaseGame:
                 if "bestmove" in output:
                     best_move = output.split("bestmove ")[1].split(" ")[0]
                     if chess.Move.from_uci(best_move) in self.board.legal_moves:
-                        self.board.processMove(str(best_move))
+                        self.actual_board.processMove(str(best_move))
                         return chess.Move.from_uci(best_move)
                     else:
                         print(f"Invalid move from engine: {best_move}")
@@ -98,6 +102,7 @@ class BaseGame:
                 move_input = self.take_move("Please enter your move: ")
                     
                 verify = self.take_input(f"Move selected: {move_input}, are you sure? (Yes/No)")
+                time.sleep(1)
                 while verify not in {"yes", "no"}: verify = self.take_input("Invalid input. Please verify Yes or No.")
 
                 if verify == "no":
@@ -106,12 +111,14 @@ class BaseGame:
                 move = chess.Move.from_uci(move_input)
 
                 if move in board.legal_moves:
-                    self.board.processMove(str(move))
+                    self.actual_board.processMove(str(move))
                     return move
                 else:
-                    print("Invalid move. Please enter a valid move.")
+                    self.user_screen.log_to_gui("Invalid move. Please enter a valid move.")
+                    time.sleep(3)
             except ValueError:
-                print("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
+                self.user_screen.log_to_gui("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
+                time.sleep(4)
 
     def start_engine(self, weights_file):
         lc0_path = LC0_PATH + "lc0"
@@ -179,7 +186,7 @@ class BaseGame:
             return None #represents a draw/no winner
         
     def take_input(self, prompt):
-        print(prompt)
+        self.user_screen.log_to_gui(prompt)
         response = transcribe_audio()
         
         return response
@@ -192,8 +199,7 @@ class BaseGame:
             if move_to_uci:
                 return move_to_uci
             else:
-                print(f"Input received: {move}")
-                print("Invalid input format. Please say moves like 'E2 E4'.")
+                self.user_screen.log_to_gui(f"Input received: {move}.\nInvalid input format. Please say moves like 'E2 E4'.")
 
     def convert_to_uci(self, speech_input):
         # Normalize input: Remove commas, extra spaces, and convert to lowercase

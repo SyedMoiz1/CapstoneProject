@@ -8,7 +8,6 @@ import warnings
 import torch
 import re
 
-print(torch.__version__)
 
 #DOWNLOAD FFMPEG ON WINDOWS
 # Suppress Whisper and PyTorch warnings
@@ -20,7 +19,7 @@ os.environ["TORCH_HOME"] = "/dev/null"
 # Load Whisper model
 model = whisper.load_model("base")  # Choose from 'tiny', 'base', 'small', 'medium', 'large'
 
-def record_audio(duration=5, sample_rate=16000):
+def record_audio(duration=3, sample_rate=16000):
     """Records audio from the default microphone"""
     audio = sd.rec(int(sample_rate * duration), samplerate=sample_rate, channels=1, dtype='float32')
     sd.wait()

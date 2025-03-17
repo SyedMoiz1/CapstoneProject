@@ -2,24 +2,24 @@ import subprocess
 import chess
 from game.base_game import BaseGame
 from game.config import LC0_PATH
+import time
 
 class StandardGame(BaseGame):
-    def __init__(self, board):
-        super().__init__(board)
+    def __init__(self, actual_board, user_screen):
+        super().__init__(actual_board, user_screen)
         self.difficulty = None
         
 
 
     def start(self):
-        print("Starting standard game...")
+        self.user_screen.log_to_gui("Starting standard game...")
         
-        self.difficulty = self.take_input("Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
-        while self.difficulty not in {"easy", "medium", "hard"}:
-            print(f"Input recieved: {self.difficulty}")
-            self.difficulty = self.take_input("Invalid input. Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
+        # self.difficulty = self.take_input("Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
+        # while self.difficulty not in {"easy", "medium", "hard"}:
+        #     self.difficulty = self.take_input(f"Input recieved: {self.difficulty}.\nInvalid input. Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
+        self.difficulty = "easy"
 
-
-        print("Difficulty level selected: " + self.difficulty)
+        self.user_screen.log_to_gui("Difficulty level selected: " + self.difficulty)
         if self.difficulty == "easy": 
             self.weights_file = LC0_PATH + "900.pb.gz"
         elif self.difficulty == "medium":
@@ -31,12 +31,11 @@ class StandardGame(BaseGame):
         engine = self.start_engine(self.weights_file)
 
         #Taking user color choine
-        user_color = self.take_input("Please select a color: \n1. White\n2. Black\n").lower()
-        while user_color not in {"white", "black"}:
-            print(f"Input recieved: {user_color}")
-            user_color = self.take_input("Invalid input. Please select a color: \n1. White\n2. Black\n").lower()
-
-        print("You are playing as " + user_color + ". Let's start the game!\n")
+        # user_color = self.take_input("Please select a color: \n1. White\n2. Black\n").lower()
+        # while user_color not in {"white", "black"}:
+        #     user_color = self.take_input(f"Input recieved: {user_color}.\nInvalid input. Please select a color: \n1. White\n2. Black\n").lower()
+        user_color = "white"
+        self.user_screen.log_to_gui("You are playing as " + user_color + ". Let's start the game!\n")
         self.display_board(self.board)
 
         #First move
@@ -62,13 +61,14 @@ class StandardGame(BaseGame):
             move_count += 1
             # Call self.board.home() every 10 moves
             if move_count % 10 == 0:
-                print("Recalibrating magnet to home position...")
-                self.board.home()
+                self.user_screen.log_to_gui("Recalibrating magnet to home position...")
+                self.actual_board.home()
 
             #AI's move
             if not self.game_over():
                 ai_move = self.take_AI_move(engine)
-                print("AI's move: " + ai_move.uci())
+                self.user_screen.log_to_gui("AI's move: " + ai_move.uci())
+                time.sleep(3)
                 self.moves += ai_move.uci() + " "
                 #update board state
                 self.board.push(ai_move)
@@ -77,8 +77,8 @@ class StandardGame(BaseGame):
                 move_count += 1
                 # Call self.board.home() every 10 moves
                 if move_count % 10 == 0:
-                    print("Recalibrating magnet to home position...")
-                    self.board.home()
+                    self.user_screen.log_to_gui("Recalibrating magnet to home position...")
+                    self.actual_board.home()
 
 if __name__ == "__main__":
     game = StandardGame()

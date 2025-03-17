@@ -34,34 +34,63 @@ class Board:
             "params": {"script": command},
             "id": self.request_counter
         }
-        self.ws.send(json.dumps(payload))
-        print(f"Sent G-code: {command} (id: {self.request_counter})")
 
+        # Check if WebSocket is connected
+        if not self.ws or not self.ws.connected:
+            raise ConnectionError("WebSocket is not connected. Cannot send G-code.")
+        
+
+        # Send the G-code command
+        try:
+            self.ws.send(json.dumps(payload))
+            print(f"Sent G-code: {command} (id: {self.request_counter})")
+        except Exception as e:
+            raise RuntimeError(f"Error sending G-code: {e}")
+
+        # If command is "custom_home", we skip waiting for a response
+        if command == "custom_home":
+            print("custom_home command sent. No response expected.")
+            self.request_counter += 1
+            return
+        
         gcode_responses = []
 
         #poll for response
         while True:
-            message = self.ws.recv()
-            data = json.loads(message)
+            try:
+                message = self.ws.recv()
 
-            # get gcode response
-            if data.get("method") == "notify_gcode_response":
-                gcode_responses.append(data["params"][0])
-                continue
-            
-            #got command response
-            if data.get("id") == self.request_counter:
-                print("\nCommand acknowledged:")
-                print(json.dumps(data, indent=4))
-                break
+                # Check if message is empty
+                # if not message.strip():
+                #     raise ValueError("Received an empty response from WebSocket.")
+                
+                #print(f"Received raw message: {message}")  # Debugging log
+                # Try to parse JSON response
+                try:
+                    data = json.loads(message)
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"JSON Parsing Error: {e}\nInvalid JSON message: {message}")
 
+                # Check for G-code response
+                if data.get("method") == "notify_gcode_response":
+                    gcode_responses.append(data["params"][0])
+                    continue
+
+                # Command acknowledged
+                if data.get("id") == self.request_counter:
+                    print("\nCommand acknowledged:")
+                    print(json.dumps(data, indent=4))
+                    break
+            except Exception as e:
+                raise RuntimeError(f"Error receiving WebSocket message: {e}")
+    
         if gcode_responses:
             print("\nG-code response(s):")
             for line in gcode_responses:
                 print(line)
-        else:
-            print("\nNo G-code response received.")
-
+        # else:
+        #     raise RuntimeError(f"No G-code response received for command: {command}")
+            
         self.request_counter += 1
 
 
@@ -263,6 +292,7 @@ class Board:
         # return graveRow, graveCol
 
     def processMove(self, move):
+        print(f"Processing move :{move}")
         start = move[:2]
         end = move[2:]
 
