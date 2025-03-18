@@ -192,16 +192,51 @@ class Board:
         phyY = 20 + diffY * 38
 
         return phyX, phyY
+    
+    def calculateDirection(self, start, end):
+        start = self.chessCoordToArrayCoord(start)
+        end = self.chessCoordToArrayCoord(end)
+        
+        dx = end[0] - start[0]
+        dy = end[1] - start[1]
+        
+        direction = ""
+
+        #check for north south
+        if dx != 0:
+            if dx < 0:
+                direction += "n"
+            else:
+                direction += "s"
+
+        #check for east west
+        if dy != 0:
+            if dy < 0:
+                direction += "w"
+            else:
+                direction += "e"
+        
+        return direction
 
     #change to moonraker later
-    def sendCoordMove(self, coord):
+    def sendCoordMove(self, coord, nudge=False, startCoord=None):
         x, y = self.chessCoordToPhysicalCoord(coord)
+
+        nudgeVal = 15
+        if nudge:
+            direction = self.calculateDirection(startCoord,coord)
+
+            if "n" in direction: x += nudgeVal
+            elif "s" in direction: x -= nudgeVal
+            elif "e" in direction: y -= nudgeVal
+            elif "w" in direction: y += nudgeVal
+
         gcode = f'_CLIENT_LINEAR_MOVE X={x} Y={y} F=1950 ABSOLUTE=1'
         print(gcode) 
                 
         self.send_gcode(gcode)
 
-    def sendTileDeltaMove(self, delta,direction):
+    def sendTileDeltaMove(self, delta, direction):
         delta = 38 * delta
         
         if direction == "n":
@@ -220,6 +255,7 @@ class Board:
         gcode = f'_CLIENT_LINEAR_MOVE X={x} Y={y} F=1950 ABSOLUTE=0'
         
         self.send_gcode(gcode)    
+
 
     def activateMagnet(self, active):
         if active:
@@ -283,13 +319,14 @@ class Board:
         print(northSouthSlide)
 
         self.sendTileDeltaMove(northSouthSlide,"n")
-        self.sendTileDeltaMove(0.5,"e")
+        self.sendTileDeltaMove(1,"e")
 
         self.activateMagnet(False)
 
         self.updateboardState(coord, self.graveyardCount, graveyard=True)
 
         # return graveRow, graveCol
+
 
     def processMove(self, move):
         print(f"Processing move :{move}")
@@ -336,35 +373,20 @@ class Board:
             sleep(1)
             self.sendTileDeltaMove(0.5,minorDirection)
             self.sendTileDeltaMove(2,majorDirection)
-            self.sendTileDeltaMove(0.5,minorDirection)
+            self.sendTileDeltaMove(1,minorDirection)
+            sleep(0.5)
             self.activateMagnet(False)
         else:
             self.sendCoordMove(start)
             sleep(0.5)
             self.activateMagnet(True)
             sleep(1)
-            self.sendCoordMove(end)
+            self.sendCoordMove(end, nudge=True, startCoord=start)
+            sleep(0.5)
             self.activateMagnet(False)
 
         self.updateboardState(start, end)
         # drawBoard()
-
-    def recenterPieces(self):
-        moves = ['h8', 'g8', 'f8', 'e8', 'd8', 'c8', 'b8', 'a8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7']
-
-        for move in moves:
-            print(move)
-            self.sendCoordMove(move)
-            sleep(3)
-            print('Activating magnet')
-            self.activateMagnet(True)
-            sleep(1)
-            print('Deactivating magnet')
-            self.activateMagnet(False)
-            sleep(0.5)
-
-
-
 
 app = Flask(__name__)
 
@@ -396,7 +418,7 @@ def move():
 
     print(move_notation)
 
-    #processMove(move_notation)
+    board.processMove(move_notation)
 
     board_state = data.get('new_state')
 
@@ -407,11 +429,12 @@ if __name__ == '__main__':
     MOONRAKER_WS_URL = "ws://autochess:7125/websocket"
     ws = websocket.WebSocket()
     ws.connect(MOONRAKER_WS_URL)
-
-    board = Board(ws)
     print("Connected to Moonraker WebSocket")
 
-    board.home()
-    board.processMove('e2e4')
+    board = Board(ws)
+
+
+    # board.home()
+    # board.processMove('e2e4')
 
     app.run(debug=True)
