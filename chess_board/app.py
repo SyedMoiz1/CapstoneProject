@@ -222,7 +222,7 @@ class Board:
     def sendCoordMove(self, coord, nudge=False, startCoord=None):
         x, y = self.chessCoordToPhysicalCoord(coord)
 
-        nudgeVal = 15
+        nudgeVal = 10
         if nudge:
             direction = self.calculateDirection(startCoord,coord)
 
@@ -319,7 +319,7 @@ class Board:
         print(northSouthSlide)
 
         self.sendTileDeltaMove(northSouthSlide,"n")
-        self.sendTileDeltaMove(1,"e")
+        self.sendTileDeltaMove(0.75,"e")
 
         self.activateMagnet(False)
 
@@ -373,7 +373,7 @@ class Board:
             sleep(1)
             self.sendTileDeltaMove(0.5,minorDirection)
             self.sendTileDeltaMove(2,majorDirection)
-            self.sendTileDeltaMove(1,minorDirection)
+            self.sendTileDeltaMove(0.75,minorDirection)
             sleep(0.5)
             self.activateMagnet(False)
         else:
