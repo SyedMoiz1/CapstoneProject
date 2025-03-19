@@ -38,14 +38,15 @@ class LogWindow:
             print("Second monitor not detected. Opening on the primary monitor.")
             self.root.state("zoomed")  # Open maximized on primary monitor
 
-    def log_to_gui(self, message):
+    def log_to_gui(self, message, clear=True):
         """Safely update GUI from any thread using `after()`."""
         if self.root:
-            self.root.after(0, self._update_gui, message)
+            self.root.after(0, self._update_gui, message, clear)
 
-    def _update_gui(self, message):
+    def _update_gui(self, message, clear):
         """Internal method to update the Tkinter Text widget."""
-        self.text_widget.delete("1.0", "end")  # Erase all text
+        if clear == True:
+            self.text_widget.delete("1.0", "end")  # Erase all text
         self.text_widget.insert("end", message + "\n")
         self.text_widget.see("end")  # Scroll to the latest message
 

@@ -13,13 +13,16 @@ class StandardGame(BaseGame):
 
     def start(self):
         self.user_screen.log_to_gui("Starting standard game...")
-        
-        # self.difficulty = self.take_input("Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
-        # while self.difficulty not in {"easy", "medium", "hard"}:
-        #     self.difficulty = self.take_input(f"Input recieved: {self.difficulty}.\nInvalid input. Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
-        self.difficulty = "easy"
+        time.sleep(2)
+        self.difficulty = self.take_input("Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
+        while self.difficulty not in {"easy", "medium", "hard"}:
+            self.user_screen.log_to_gui(f"Input recieved: {self.difficulty}.\nInvalid input.", clear=False)
+            time.sleep(2)
+            self.difficulty = self.take_input(f"Please select a difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()
+        #self.difficulty = "easy"
 
-        self.user_screen.log_to_gui("Difficulty level selected: " + self.difficulty)
+        self.user_screen.log_to_gui("Difficulty level selected: " + self.difficulty, clear=False)
+        time.sleep(2)
         if self.difficulty == "easy": 
             self.weights_file = LC0_PATH + "900.pb.gz"
         elif self.difficulty == "medium":
@@ -31,13 +34,15 @@ class StandardGame(BaseGame):
         engine = self.start_engine(self.weights_file)
 
         #Taking user color choine
-        # user_color = self.take_input("Please select a color: \n1. White\n2. Black\n").lower()
-        # while user_color not in {"white", "black"}:
-        #     user_color = self.take_input(f"Input recieved: {user_color}.\nInvalid input. Please select a color: \n1. White\n2. Black\n").lower()
+        user_color = self.take_input("Please select a color: \n1. White\n2. Black\n").lower()
+        while user_color not in {"white", "black"}:
+            self.user_screen.log_to_gui(f"Input recieved: {user_color}.\nInvalid input.", clear=False)
+            time.sleep(2)
+            user_color = self.take_input(f"Please select a color: \n1. White\n2. Black\n").lower()
         user_color = "white"
-        self.user_screen.log_to_gui("You are playing as " + user_color + ". Let's start the game!\n")
+        self.user_screen.log_to_gui("You are playing as " + user_color + ". Let's start the game!\n", clear=False)
         self.display_board(self.board)
-
+        time.sleep(2)
         #First move
         if user_color == "white":
             self.first_move(engine, "user")
@@ -63,6 +68,7 @@ class StandardGame(BaseGame):
             if move_count % 10 == 0:
                 self.user_screen.log_to_gui("Recalibrating magnet to home position...")
                 self.actual_board.home()
+            time.sleep(3)
 
             #AI's move
             if not self.game_over():
@@ -79,6 +85,7 @@ class StandardGame(BaseGame):
                 if move_count % 10 == 0:
                     self.user_screen.log_to_gui("Recalibrating magnet to home position...")
                     self.actual_board.home()
+                    time.sleep(3)
 
 if __name__ == "__main__":
     game = StandardGame()

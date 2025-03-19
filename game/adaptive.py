@@ -6,53 +6,74 @@ import json
 from game.base_game import BaseGame
 from game.user import User
 from game.analyze_game import analyze_pgn
+import time
 
 N = 5 #Adapt every 5 games and Weight the last 5 games more heavily
 
 class AdaptiveGame(BaseGame):
-    def __init__(self, actual_board):
-        super().__init__(actual_board)        
+    def __init__(self, actual_board, user_screen):
+        super().__init__(actual_board, user_screen)        
 
 
     def start(self):
-        print("Starting adaptive game...")
-
+        self.user_screen.log_to_gui("Starting adaptive game...")
+        time.sleep(2)
         #first check if user already exists in json
         #pass newuser True/False to user class, which decides whether new entry is to be created
         #if new user False, run function which checks if difficulty adjustment is needed based on users data
         #record game in pgn format, and after each game run a full analysis to count the number of blunders, and update
 
         while True:
-            while (new_user := self.take_input("Are you a new user? (yes/no): ").lower()) not in {"yes", "no"}: print("Invalid input.")            
+            new_user = self.take_input("Are you a new user? (yes/no)")
+            while new_user not in {"yes", "no"}: 
+                self.user_screen.log_to_gui(f"Input received {new_user}. Invalid Input", clear=False)
+                time.sleep(2)
+                new_user = self.take_input("Are you a new user? (yes/no)")
             
             while True:
-                name = self.take_input("Please enter your name: ")
-                while (verify := self.take_input(f"Name received {name}, confirm? (yes/no) ").lower()) not in {"yes", "no"}: print("Invalid input.")
+                name = self.take_input("Please say your name: ")
+                verify = self.take_input(f"Name received {name}, confirm? (yes/no) ")
+                while verify not in {"yes", "no"}:
+                    self.user_screen.log_to_gui(f"Input received {verify}. Invalid Input", clear=False)
+                    time.sleep(2)
+                    verify = self.take_input(f"Name received {name}, confirm? (yes/no) ")
                 if verify == "yes":
                     break
             
-            if new_user == "y" and self.user_exists(name):
+            if new_user == "yes" and self.user_exists(name):
                 #check if user already exists in json
-                while (name_exists_check := self.take_input(f"User {name} already exists. Would you like to continue as {name}? (yes/no): ").lower()) not in {"yes", "no"}: print("Invalid input.")
-                if name_exists_check == "n": continue
+                name_exists_check = self.take_input(f"User {name} already exists. Would you like to continue as {name}? (yes/no): ")
+                while name_exists_check not in {"yes", "no"}:
+                   self.user_screen.log_to_gui(f"Input received {name_exists_check}. Invalid Input", clear=False)
+                   time.sleep(2)
+                   name_exists_check = self.take_input(f"User {name} already exists. Would you like to continue as {name}? (yes/no): ")
+                
+                if name_exists_check == "n": 
+                    continue
                 else: 
                     user = User(name)
                     print(f"Welcome {name}!")
                     break
-            elif new_user == "y":
-                while (difficulty := self.take_input(f"Please select a starting difficulty level: \n1. Easy\n2. Medium\n3. Hard\n").lower()) not in {"easy", "medium", "hard"}: print("Invalid input.")
+            elif new_user == "yes":
+                difficulty = self.take_input(f"Please select a starting difficulty level: \n1. Easy\n2. Medium\n3. Hard\n")
+                while difficulty not in {"easy", "medium", "hard"}:
+                    self.user_screen.log_to_gui(f"Input received {difficulty}. Invalid Input", clear=False)
+                    time.sleep(2)
+                    difficulty = self.take_input(f"Please select a starting difficulty level: \n1. Easy\n2. Medium\n3. Hard\n")
+
                 if difficulty == "easy": 
                     elo = 900
                 elif difficulty == "medium":
                     elo = 1400
                 else:
                     elo = 1800
+
                 user = User(name, new_user=True, diff_level=elo)
-                print(f"Welcome {name}!")
+                self.user_screen.log_to_gui(f"Welcome {name}!")
                 break
             else:
                 user = User(name)
-                print(f"Welcome {name}!")
+                self.user_screen.log_to_gui(f"Welcome {name}!")
                 break
         
         while True:  
@@ -69,13 +90,17 @@ class AdaptiveGame(BaseGame):
             self.board = chess.Board() #initialize board
 
             #Taking user color choice
-            while (user_color := self.take_input(f"Please select a color: \n1. White\n2. Black\n").lower()) not in {"white", "black"}: print("Invalid input.")
-            
-            print(f"You are playing as {user_color}. Let's start the game!\n")
+            user_color = self.take_input("Please select a color: \n1. White\n2. Black\n").lower()
+            while user_color not in {"white", "black"}:
+                self.user_screen.log_to_gui(f"Input recieved: {user_color}.\nInvalid input.", clear=False)
+                time.sleep(2)
+                user_color = self.take_input(f"Please select a color: \n1. White\n2. Black\n").lower()
+            user_color = "white"
+            self.user_screen.log_to_gui("You are playing as " + user_color + ". Let's start the game!\n", clear=False)
             self.display_board(self.board)
             #self.board_to_matrix(self.board)
             #print(self.board)
-
+            time.sleep(2)
             #First move
             if user_color == "white":
                 self.first_move(engine, "user")
@@ -103,13 +128,15 @@ class AdaptiveGame(BaseGame):
                 move_count += 1
                 # Call self.board.home() every 10 moves
                 if move_count % 10 == 0:
-                    print("Recalibrating magnet to home position...")
+                    self.user_screen.log_to_gui("Recalibrating magnet to home position...")
                     self.actual_board.home()
-
+                time.sleep(3)
+                
                 #AI's move
                 if not self.game_over():
                     ai_move = self.take_AI_move(engine)
-                    print("AI's move: " + ai_move.uci())
+                    self.user_screen.log_to_gui("AI's move: " + ai_move.uci())
+                    time.sleep(3)
                     self.moves += ai_move.uci() + " "
                     #update board state
                     self.board.push(ai_move)
@@ -118,8 +145,9 @@ class AdaptiveGame(BaseGame):
                     move_count += 1
                     # Call self.board.home() every 10 moves
                     if move_count % 10 == 0:
-                        print("Recalibrating magnet to home position...")
+                        self.user_screen.log_to_gui("Recalibrating magnet to home position...")
                         self.actual_board.home()
+                        time.sleep(3)
 
            
             ####Game over
@@ -145,16 +173,14 @@ class AdaptiveGame(BaseGame):
                 blunders = analyze_pgn(game_pgn, player_white=False)
 
             #print(blunders) #list of blunders
-            print(f"{len(blunders)} blunders") #number of blunders
-            print(f"{num_moves} moves played")
+            self.user_screen.log_to_gui("Game results:")
+            self.user_screen.log_to_gui(f"{len(blunders)} blunders made", clear = False) #number of blunders
+            self.user_screen.log_to_gui(f"{num_moves} moves played", clear = False)
 
             #update user data
             self.update_user_data(user, len(blunders), num_moves, user_result)
             self.adjust_difficulty(user)
 
-            #play again
-            while (play_again := self.take_input("Would you like to play again? (yes/no): ").lower()) not in {"yes", "no"}: print("Invalid input.")
-            if play_again == "no": break 
 
 
     def update_user_data(self, user, blunders, num_moves, game_result):
@@ -235,8 +261,8 @@ class AdaptiveGame(BaseGame):
             if u["name"] == user.name:
                 #check if adjustment is needed
                 if u["games_played"] % N == 0 and u["games_played"] != 0:
-                    print(f"Adjusting difficulty for {user.name}...")
-
+                    self.user_screen.log_to_gui(f"Adjusting difficulty for {user.name}...")
+                    
                     blunder_score = self.get_blunder_score(u["blunder_avg"], u["diff_level"])
                     game_duration_score = (u["avg_duration"] - 30) / (60 - 30)
                     win_rate = u["wins"] / u["games_played"]
@@ -252,7 +278,7 @@ class AdaptiveGame(BaseGame):
                     elif difficulty_score <= 0.40 and u["diff_level"] > 800:
                         self.decrease_difficulty(user)
                     else:
-                        print("Difficulty level maintained.")
+                        self.user_screen.log_to_gui("Difficulty level maintained.", clear = False)
                     break
 
     def increase_difficulty(self, user):
@@ -263,8 +289,12 @@ class AdaptiveGame(BaseGame):
         for u in users:
             if u["name"] == user.name:
                 diff_level = u["diff_level"]
-                while (increase := 
-                       self.take_input(f"Your current Difficulty is at {diff_level}, Difficulty increase is recommended, would you like to increase? (yes/no): ").lower()) not in {"yes", "no"}: print("Invalid input.")
+                increase = self.take_input(f"Your current Difficulty is at {diff_level}, Difficulty increase is recommended, would you like to increase? (yes/no): ")
+                while increase not in {"yes", "no"}: 
+                    self.user_screen.log_to_gui(f"Input recieved: {increase}.\nInvalid input.", clear=False)
+                    time.sleep(2)
+                    increase = self.take_input(f"Your current Difficulty is at {diff_level}, Difficulty increase is recommended, would you like to increase? (yes/no): ")
+
                 if increase == "yes":
                     u["diff_level"] = diff_level + 100
                     print(f"Difficulty level increased to {diff_level + 100} elo.")
@@ -274,8 +304,8 @@ class AdaptiveGame(BaseGame):
                     with open("user_data.json", "w") as file:
                         json.dump(user_data, file, indent=4)      
                 else:
-                    print("Difficulty level maintained.")
-
+                    self.user_screen.log_to_gui("Difficulty level maintained.")
+                    time.sleep(2)
                 break
 
     def decrease_difficulty(self, user):
@@ -286,8 +316,13 @@ class AdaptiveGame(BaseGame):
         for u in users:
             if u["name"] == user.name:
                 diff_level = u["diff_level"]
-                while (decrease := 
-                       self.take_input(f"Your current Difficulty is at {diff_level} elo, Difficulty decrease is recommended, would you like to decrease? (yes/no): ").lower()) not in {"yes", "no"}: print("Invalid input.")
+                decrease = self.take_input(f"Your current Difficulty is at {diff_level} elo, Difficulty decrease is recommended, would you like to decrease? (yes/no): ")
+                while decrease not in {"yes", "no"}: 
+                    self.user_screen.log_to_gui(f"Input recieved: {decrease}.\nInvalid input.", clear=False)
+                    time.sleep(2)
+                    decrease = self.take_input(f"Your current Difficulty is at {diff_level} elo, Difficulty decrease is recommended, would you like to decrease? (yes/no): ")
+
+
                 if decrease == "yes":
                     u["diff_level"] = diff_level - 100
                     print(f"Difficulty level decreased to {diff_level - 100} elo.")
@@ -297,8 +332,8 @@ class AdaptiveGame(BaseGame):
                     with open("user_data.json", "w") as file:
                         json.dump(user_data, file, indent=4)      
                 else:
-                    print("Difficulty level maintained.")
-                
+                    self.user_screen.log_to_gui("Difficulty level maintained.")
+                    time.sleep(2)
                 break
 
 

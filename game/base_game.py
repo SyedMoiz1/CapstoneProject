@@ -39,8 +39,8 @@ class BaseGame:
        #performs the first move of the game
         self.actual_board.home()
         if turn == "user":
-            #user_move = self.take_user_move(self.board)
-            user_move = chess.Move.from_uci("e2e4")
+            user_move = self.take_user_move(self.board)
+            #user_move = chess.Move.from_uci("e2e4")
             self.user_screen.log_to_gui(f"Your opening move: {user_move.uci()}")
             uci_command = "position startpos moves " + user_move.uci()
             self.send_command(engine, uci_command)
@@ -102,8 +102,10 @@ class BaseGame:
                 move_input = self.take_move("Please enter your move: ")
                     
                 verify = self.take_input(f"Move selected: {move_input}, are you sure? (Yes/No)")
-                time.sleep(1)
-                while verify not in {"yes", "no"}: verify = self.take_input("Invalid input. Please verify Yes or No.")
+                while verify not in {"yes", "no"}:
+                    self.user_screen.log_to_gui(f"Input received '{verify}'. Invalid input", clear = False)
+                    time.sleep(2)
+                    verify = self.take_input(f"Move selected: {move_input}, are you sure? (Yes/No)")
 
                 if verify == "no":
                     continue
@@ -115,10 +117,10 @@ class BaseGame:
                     return move
                 else:
                     self.user_screen.log_to_gui("Invalid move. Please enter a valid move.")
-                    time.sleep(3)
+                    time.sleep(2)
             except ValueError:
                 self.user_screen.log_to_gui("Invalid input. Please enter a move in UCI format (e.g., e2e4).")
-                time.sleep(4)
+                time.sleep(2)
 
     def start_engine(self, weights_file):
         lc0_path = LC0_PATH + "lc0"

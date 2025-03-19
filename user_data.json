@@ -1,0 +1,18 @@
+{
+    "users": [
+        {
+            "name": "kevin",
+            "diff_level": 900,
+            "games_played": 0,
+            "wins": 0,
+            "losses": 0,
+            "blunders": [],
+            "blunder_avg": 0,
+            "avg_duration": 0,
+            "elo_history": [
+                900
+            ],
+            "game_history": []
+        }
+    ]
+}

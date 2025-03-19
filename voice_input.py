@@ -34,16 +34,17 @@ def transcribe_audio():
         # Save as a WAV file (Fixed issue!)
         temp_wav = "temp_audio.wav"
         sf.write(temp_wav, audio_data, 16000)  # <-- Use soundfile to save the file
-
-        # Transcribe with Whisper
+        
+        # # Transcribe with Whisper
         result = model.transcribe(temp_wav)
         if result["text"] != "":
-            return result["text"].lower().strip(".").strip(" ")
+            cleaned_text = re.sub(r"[^a-zA-Z0-9]", "", result["text"])
+            return cleaned_text.lower()
 
 
 
 # # Example usage
 if __name__ == "__main__":
     print("Say your move:")
-    move = transcribe_audio()
-    print(f"You said: {move}")
+    text = transcribe_audio()
+    print(f"You said: {text}")

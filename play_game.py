@@ -11,23 +11,28 @@ import time
 print("Connecting to Moonraker...")
 MOONRAKER_WS_URL = "ws://autochess:7125/websocket"
 ws = websocket.WebSocket()
-ws.connect(MOONRAKER_WS_URL)
+#ws.connect(MOONRAKER_WS_URL)
 print("Connected to Moonraker WebSocket")
 
 def run_game():
     while True:
-        # user_screen.log_to_gui("Pick option 1 or 2 for play style:\n1: Voice Commands\n2: By Hand")
-        # while (playstyle := transcribe_audio().lower()) not in {"1", "2"}: user_screen.log_to_gui("Invalid input. Please Say 1 or 2")            
-        playstyle = 1
-        if playstyle == 1: mode = "Voice Commands"
-        else: mode = "By hand"
-        user_screen.log_to_gui(f"Game mode selected: {mode}")
+        # # user_screen.log_to_gui("Pick option 1 or 2 for play style:\n1: Voice Commands\n2: By Hand")
+        # # while (playstyle := transcribe_audio().lower()) not in {"1", "2"}: user_screen.log_to_gui("Invalid input. Please Say 1 or 2")            
+        # playstyle = 1
+        # if playstyle == 1: mode = "Voice Commands"
+        # else: mode = "By hand"
 
-        time.sleep(4)
+
+        user_screen.log_to_gui(f"Welcome to Autochess!")
+
+        time.sleep(3)
         #ask user if they would like to play standard or adaptive
-        # user_screen.log_to_gui("Pick your game mode:\n1: Standard\n2: Adaptive")
-        # while (gamemode := transcribe_audio().lower()) not in {"standard", "adaptive"}: user_screen.log_to_gui("Invalid input. Please Say Standard or Adaptive")       
-        gamemode = "standard"
+        user_screen.log_to_gui("Pick your game mode:\n1: Standard\n2: Adaptive")
+        while (gamemode := transcribe_audio().lower()) not in {"standard", "adaptive"}:
+            user_screen.log_to_gui(f"Input recieved: {gamemode}.\nInvalid input.", clear=False)
+            time.sleep(2)
+            user_screen.log_to_gui("Pick your game mode:\n1: Standard\n2: Adaptive")       
+        #gamemode = "standard"
         board = Board(ws)
         #start standard/adaptive programs
         if gamemode == "standard": #STANDARD GAME MODE
@@ -37,10 +42,19 @@ def run_game():
             game = AdaptiveGame(board, user_screen)
             game.start()
         
-        user_screen.log_to_gui("Would you like to restart?")
-        while (restart := transcribe_audio().lower()) not in {"yes", "no"}: user_screen.log_to_gui("Invalid input. Please Say 'Yes' or 'No'") 
+        user_screen.log_to_gui("Would you like to restart? (Yes or No)")
+        while (restart := transcribe_audio().lower()) not in {"yes", "no"}:
+            user_screen.log_to_gui(f"Input recieved: {restart}.\nInvalid input.", clear=False)
+            time.sleep(2)
+            user_screen.log_to_gui("Would you like to restart? (Yes or No)") 
         if restart == "no":
+            user_screen.log_to_gui(f"Input selected {restart}. Thank you for playing!", clear=False)
+            time.sleep(3)
             break
+        else:
+            user_screen.log_to_gui(f"Input selected {restart}. Restarting game...", clear=False)
+            time.sleep(3)
+
 
 
 if __name__ == "__main__":
