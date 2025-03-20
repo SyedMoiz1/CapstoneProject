@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import websocket
 
 #websocket url
-MOONRAKER_WS_URL = "ws://autochess:7125/websocket"
+MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
 #ws = websocket.WebSocket()
 
 #request_counter = 0
@@ -520,7 +520,7 @@ if __name__ == '__main__':
     board = Board(ws)
 
 
-    # board.home()
-    # board.processMove('e2e4')
+    board.home()
+    board.processMove('e1c1')
 
     app.run(debug=True)
