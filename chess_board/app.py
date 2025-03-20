@@ -462,6 +462,7 @@ class Board:
             self.sendTileDeltaMove(0.5,minorDirection)
             sleep(0.5)
             self.activateMagnet(False)
+            self.updateboardState(start, end)
         else:
             self.sendCoordMove(start)
             sleep(0.5)
@@ -471,7 +472,7 @@ class Board:
             sleep(0.5)
             self.activateMagnet(False)
 
-        self.updateboardState(start, end)
+            self.updateboardState(start, end)
         # drawBoard()
 
 app = Flask(__name__)
@@ -512,7 +513,7 @@ def move():
 
 if __name__ == '__main__':
     print("Connecting to Moonraker...")
-    MOONRAKER_WS_URL = "ws://autochess:7125/websocket"
+    MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
     ws = websocket.WebSocket()
     ws.connect(MOONRAKER_WS_URL)
     print("Connected to Moonraker WebSocket")
