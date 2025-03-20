@@ -319,7 +319,7 @@ class Board:
         print(northSouthSlide)
 
         self.sendTileDeltaMove(northSouthSlide,"n")
-        self.sendTileDeltaMove(0.75,"e")
+        self.sendTileDeltaMove(0.5,"e")
 
         self.activateMagnet(False)
 
@@ -352,7 +352,93 @@ class Board:
             self.moveToGraveyard(end)
         else:
             print('NO CAPTURE')
-
+        
+        #check for castling
+        if pieceType == 'k' and (start == 'e1' or start == 'e8') and (end == 'g1' or end == 'c1' or end == 'g8' or end == 'c8'):
+            #white king side
+            if start == 'e1' and end == 'g1':
+                self.sendCoordMove('e1')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendCoordMove('g1')
+                sleep(0.5)
+                self.activateMagnet(False)
+                sleep(1)
+                self.sendCoordMove('h1')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendTileDeltaMove(0.5,"s")
+                self.sendTileDeltaMove(2,"w")
+                self.sendTileDeltaMove(0.5,"n")
+                sleep(0.5)
+                self.activateMagnet(False)
+                self.updateboardState('h1', 'f1')
+                self.updateboardState('e1', 'g1')
+            #white queen side
+            elif start == 'e1' and end == 'c1':
+                self.sendCoordMove('e1')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendCoordMove('c1')
+                sleep(0.5)
+                self.activateMagnet(False)
+                sleep(1)
+                self.sendCoordMove('a1')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendTileDeltaMove(0.5,"s")
+                self.sendTileDeltaMove(3,"e")
+                self.sendTileDeltaMove(0.5,"n")
+                sleep(0.5)
+                self.activateMagnet(False)
+                self.updateboardState('a1', 'd1')
+                self.updateboardState('e1', 'c1')
+            #black king side
+            elif start == 'e8' and end == 'c8':
+                self.sendCoordMove('e8')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendCoordMove('g8')
+                sleep(0.5)
+                self.activateMagnet(False)
+                sleep(1)
+                self.sendCoordMove('h8')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendTileDeltaMove(0.5,"n")
+                self.sendTileDeltaMove(2,"w")
+                self.sendTileDeltaMove(0.5,"s")
+                sleep(0.5)
+                self.activateMagnet(False)
+                self.updateboardState('h8', 'f8')
+                self.updateboardState('e8', 'g8')
+            elif start == 'e8' and end == 'g8':
+                self.sendCoordMove('e8')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendCoordMove('g8')
+                sleep(0.5)
+                self.activateMagnet(False)
+                sleep(1)
+                self.sendCoordMove('h8')
+                sleep(0.5)
+                self.activateMagnet(True)
+                sleep(1)
+                self.sendTileDeltaMove(0.5,"n")
+                self.sendTileDeltaMove(3,"e")
+                self.sendTileDeltaMove(0.5,"s")
+                sleep(0.5)
+                self.activateMagnet(False)
+                self.updateboardState('h8', 'f8')
+                self.updateboardState('e8', 'g8')
+            
         #check for knight
         if pieceType == 'n':
             #check direction of move
@@ -373,7 +459,7 @@ class Board:
             sleep(1)
             self.sendTileDeltaMove(0.5,minorDirection)
             self.sendTileDeltaMove(2,majorDirection)
-            self.sendTileDeltaMove(0.75,minorDirection)
+            self.sendTileDeltaMove(0.5,minorDirection)
             sleep(0.5)
             self.activateMagnet(False)
         else:
@@ -381,7 +467,7 @@ class Board:
             sleep(0.5)
             self.activateMagnet(True)
             sleep(1)
-            self.sendCoordMove(end, nudge=True, startCoord=start)
+            self.sendCoordMove(end)
             sleep(0.5)
             self.activateMagnet(False)
 
