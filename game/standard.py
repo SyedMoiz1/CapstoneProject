@@ -9,6 +9,7 @@ class StandardGame(BaseGame):
         super().__init__(actual_board, user_screen)
         self.difficulty = None
         
+        
 
 
     def start(self):
@@ -44,6 +45,10 @@ class StandardGame(BaseGame):
         self.display_board(self.board)
         time.sleep(2)
         #First move
+
+        self.actual_board.home()
+        time.sleep(4)
+        #self.actual_board.processMove("e2e4")
         if user_color == "white":
             self.first_move(engine, "user")
         else:

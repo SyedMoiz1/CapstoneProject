@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import websocket
 
 #websocket url
-MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
+# MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
 #ws = websocket.WebSocket()
 
 #request_counter = 0
@@ -82,7 +82,7 @@ class Board:
                     print(json.dumps(data, indent=4))
                     break
             except Exception as e:
-                raise RuntimeError(f"Error receiving WebSocket message: {e}")
+                print(f"Error receiving WebSocket message {e}")
     
         if gcode_responses:
             print("\nG-code response(s):")
@@ -361,7 +361,7 @@ class Board:
                 sleep(0.5)
                 self.activateMagnet(True)
                 sleep(1)
-                self.sendCoordMove('g1')
+                self.sendCoordMove('g1', nudge=True, startCoord='e1')
                 sleep(0.5)
                 self.activateMagnet(False)
                 sleep(1)
@@ -382,7 +382,7 @@ class Board:
                 sleep(0.5)
                 self.activateMagnet(True)
                 sleep(1)
-                self.sendCoordMove('c1')
+                self.sendCoordMove('c1', nudge=True, startCoord='e1')
                 sleep(0.5)
                 self.activateMagnet(False)
                 sleep(1)
@@ -403,7 +403,7 @@ class Board:
                 sleep(0.5)
                 self.activateMagnet(True)
                 sleep(1)
-                self.sendCoordMove('g8')
+                self.sendCoordMove('g8', nudge=True, startCoord='e8')
                 sleep(0.5)
                 self.activateMagnet(False)
                 sleep(1)
@@ -423,7 +423,7 @@ class Board:
                 sleep(0.5)
                 self.activateMagnet(True)
                 sleep(1)
-                self.sendCoordMove('g8')
+                self.sendCoordMove('g8', nudge=True, startCoord="e8")
                 sleep(0.5)
                 self.activateMagnet(False)
                 sleep(1)
@@ -468,60 +468,74 @@ class Board:
             sleep(0.5)
             self.activateMagnet(True)
             sleep(1)
-            self.sendCoordMove(end)
+            self.sendCoordMove(end, nudge=True, startCoord=start)
             sleep(0.5)
             self.activateMagnet(False)
 
             self.updateboardState(start, end)
         # drawBoard()
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-# Initial chess board setup
-board_state = [
-    ["r", "n", "b", "q", "k", "b", "n", "r"],
-    ["p", "p", "p", "p", "p", "p", "p", "p"],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["P", "P", "P", "P", "P", "P", "P", "P"],
-    ["R", "N", "B", "Q", "K", "B", "N", "R"]
-]
+# # Initial chess board setup
+# board_state = [
+#     ["r", "n", "b", "q", "k", "b", "n", "r"],
+#     ["p", "p", "p", "p", "p", "p", "p", "p"],
+#     ["", "", "", "", "", "", "", ""],
+#     ["", "", "", "", "", "", "", ""],
+#     ["", "", "", "", "", "", "", ""],
+#     ["", "", "", "", "", "", "", ""],
+#     ["P", "P", "P", "P", "P", "P", "P", "P"],
+#     ["R", "N", "B", "Q", "K", "B", "N", "R"]
+# ]
 
-# File to store moves
-MOVES_FILE = "chess_moves.txt"
+# # File to store moves
+# MOVES_FILE = "chess_moves.txt"
 
-@app.route('/')
-def index():
-    return render_template('chess.html', board=json.dumps(board_state))
+# @app.route('/')
+# def index():
+#     return render_template('chess.html', board=json.dumps(board_state))
 
-@app.route('/move', methods=['POST'])
-def move():
-    global board_state
+# @app.route('/move', methods=['POST'])
+# def move():
+#     global board_state
 
-    data = request.json
-    move_notation = data.get('move_notation')
+#     data = request.json
+#     move_notation = data.get('move_notation')
 
-    print(move_notation)
+#     print(move_notation)
 
-    board.processMove(move_notation)
+#     board.processMove(move_notation)
 
-    board_state = data.get('new_state')
+#     board_state = data.get('new_state')
 
-    return jsonify({"message": "Move recorded successfully!"})
+#     return jsonify({"message": "Move recorded successfully!"})
 
-if __name__ == '__main__':
-    print("Connecting to Moonraker...")
-    MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
-    ws = websocket.WebSocket()
-    ws.connect(MOONRAKER_WS_URL)
-    print("Connected to Moonraker WebSocket")
+# if __name__ == '__main__':
+#     print("Connecting to Moonraker...")
+#     MOONRAKER_WS_URL = "ws://autochessV2:7125/websocket"
+#     ws = websocket.WebSocket()
+#     ws.connect(MOONRAKER_WS_URL)
+#     print("Connected to Moonraker WebSocket")
 
-    board = Board(ws)
+#     board = Board(ws)
 
 
-    board.home()
-    board.processMove('e1c1')
+#     board.home()
+#     board.processMove('h2h4')
+    # sleep(1)
+    # board.processMove('g2g4')
+    # sleep(1)
+    # board.processMove('f2f4')
+    # sleep(1)
+    # board.processMove('e2e4')
+    # sleep(1)
+    # board.processMove('d2d4')
+    # sleep(1)
+    # board.processMove('c2c4')
+    # sleep(1)
+    # board.processMove('b2b4')
+    # sleep(1)
+    # board.processMove('a2a4')
 
-    app.run(debug=True)
+    #app.run(debug=True)

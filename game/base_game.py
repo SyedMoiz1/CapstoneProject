@@ -35,9 +35,9 @@ class BaseGame:
                 self.user_screen.log_to_gui("Game over!\n The game ended due to threefold repetition.")
             return True
         
-    def first_move(self, engine, turn):
+    def first_move(self,engine, turn):
        #performs the first move of the game
-        self.actual_board.home()
+        
         if turn == "user":
             user_move = self.take_user_move(self.board)
             #user_move = chess.Move.from_uci("e2e4")
@@ -45,7 +45,7 @@ class BaseGame:
             uci_command = "position startpos moves " + user_move.uci()
             self.send_command(engine, uci_command)
             self.moves += uci_command + " "
-            self.actual_board.processMove(str(user_move))
+            #actual_board.processMove(str(user_move))
             #update board state
             self.board.push(user_move)
             
@@ -53,11 +53,12 @@ class BaseGame:
 
             time.sleep(2)
             #Take AI's move
-            #ai_move = self.take_AI_move(engine)
-            ai_move = chess.Move.from_uci("e7e5")
+            ai_move = self.take_AI_move(engine)
+            #ai_move = chess.Move.from_uci("e7e5")
             self.user_screen.log_to_gui("AI's opening move: " + ai_move.uci())
+            time.sleep(4)
             self.moves += ai_move.uci() + " "
-            self.actual_board.processMove(str(ai_move))
+            #self.actual_board.processMove(str(ai_move))
             #update board state
             self.board.push(ai_move)
             
@@ -65,9 +66,10 @@ class BaseGame:
             ai_move = self.take_AI_move(engine)
             #ai_move = chess.Move.from_uci("e7e5")
             self.user_screen.log_to_gui("AI's opening move: " + ai_move.uci()+ "\n")
+            time.sleep(4)
             self.moves += "position startpos moves " + ai_move.uci() + " "
             #update board state
-            self.actual_board.processMove(str(ai_move))
+            #self.actual_board.processMove(str(ai_move))
             self.board.push(ai_move)
             
 
@@ -114,6 +116,7 @@ class BaseGame:
 
                 if move in board.legal_moves:
                     self.actual_board.processMove(str(move))
+                    time.sleep(4)
                     return move
                 else:
                     self.user_screen.log_to_gui("Invalid move. Please enter a valid move.")
@@ -196,6 +199,7 @@ class BaseGame:
     def take_move(self, prompt):
         while True:
             move = self.take_input(prompt)
+            self.user_screen.log_to_gui(move)
             move_to_uci = self.convert_to_uci(move)
 
             if move_to_uci:
